@@ -191,8 +191,11 @@ class Main extends Component {
                             </div>                            
                         }
                         {this.state.search !== '' &&
-                            <div>
+                            <div style={{position: 'relative'}}>
                                 <h1 style={{textAlign: 'center', margin: '0', color: '#666'}}>Search Results</h1>
+                                <div className="button" style={{textAlign: 'center', cursor: 'pointer', margin: '20px auto 20px auto', width: '120px', height: '30px', background: '#0494e1', borderRadius: '2px', position: 'absolute', left: '4px', top: '-14px'}} onClick={() => this.addScore()}>
+                                    <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>ADD SCORE</span>
+                                </div>
                                 <div>
                                     {this.state.searchresults.map(value => {
                                         return <Scorecard value={value} theid={value.id} key={value.id} setEdit={this.setEdit}/>
