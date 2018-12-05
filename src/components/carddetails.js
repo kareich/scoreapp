@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+const $ = window.$;
 
 class CardDetails extends Component {
     constructor(props) {
@@ -8,6 +9,22 @@ class CardDetails extends Component {
             author: props.value.author,
             type: props.value.type,
             year: props.value.year
+        }
+    }
+
+    componentDidMount() {
+        $('#editscoretitle').focus();
+        window.addEventListener('keyup', this.clickButton);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keyup', this.clickButton); 
+    }
+
+    clickButton(event) {
+        if (event.keyCode === 13) {
+            console.log('yo yo yo');
+            $('#editscorebutton').trigger('click');
         }
     }
 
@@ -34,7 +51,7 @@ class CardDetails extends Component {
             <div style={{position: 'absolute', top: '50%', left: '50%', backgroundColor: 'white', width: '400px', zIndex: 1, textAlign: 'center', transform: 'translate(-50%, -50%)', borderRadius: '3px', boxShadow: '2px 2px 2px rgba(68,68,68,0.6)'}}>
                 <p style={{fontSize: '18px', color: '#666', margin: '4px auto 0 auto', fontWeight: 'bold'}}>Edit Score Details</p>
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Title</p>
-                <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.title} onChange={e => this.updateDetail(e.target.value, 'title')} />
+                <input id="editscoretitle" type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.title} onChange={e => this.updateDetail(e.target.value, 'title')} />
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Author</p>
                 <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.author} onChange={e => this.updateDetail(e.target.value, 'author')} />
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Type</p>
@@ -47,7 +64,7 @@ class CardDetails extends Component {
                 </select>
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Year</p>
                 <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.year} onChange={e => this.updateDetail(e.target.value, 'year')} />
-                <div className="button" style={buttonstyle} onClick={buttonclick}>
+                <div id="editscorebutton" className="button" style={buttonstyle} onClick={buttonclick}>
                     <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>DONE</span>
                 </div>
             </div>

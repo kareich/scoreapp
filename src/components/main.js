@@ -126,7 +126,9 @@ class Main extends Component {
                 $('#addscore').remove();
             });
             $('#addscore').trigger('click');
-        }        
+        }else {
+            $('#addscore').trigger('click');
+        }      
     }
 
     cancelAdd() {
@@ -153,6 +155,7 @@ class Main extends Component {
                 author: newvalues.author,
                 type: newvalues.type,
                 year: newvalues.year,
+                raw: null,
                 id: +response.data
             };
             copy.push(newscore);

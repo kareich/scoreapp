@@ -15,6 +15,7 @@ class AddCard extends Component {
 
     componentDidMount() {
         const file = this.props.file;
+        this.setState({title: file.name.replace('.pdf', '')});
         if (FileReader) {
             const cardheight = $('#addcard').height();
             let roomleft = window.innerHeight - cardheight - 40;
@@ -43,6 +44,18 @@ class AddCard extends Component {
             };
             fileReader.readAsArrayBuffer(file);
         }
+        window.addEventListener('keyup', this.clickButton);  
+        $('#addscoretitle').focus();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keyup', this.clickButton); 
+    }
+
+    clickButton(event) {
+        if (event.keyCode === 13) {
+            $('#addscorebutton').trigger('click');
+        }
     }
 
     updateDetail(value, type) {
@@ -62,7 +75,7 @@ class AddCard extends Component {
                 <p style={{fontSize: '18px', color: '#666', margin: '4px auto 0 auto', fontWeight: 'bold'}}>New Score Details</p>
                 <canvas id="canvas" style={{height: '0'}}></canvas>
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Title</p>
-                <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.title} onChange={e => this.updateDetail(e.target.value, 'title')} />
+                <input id="addscoretitle" type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.title} onChange={e => this.updateDetail(e.target.value, 'title')} />
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Author</p>
                 <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.author} onChange={e => this.updateDetail(e.target.value, 'author')} />
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Type</p>
@@ -76,7 +89,7 @@ class AddCard extends Component {
                 <p style={{color: '#666', fontSize: '12px', margin: '16px auto 2px auto'}}>Year</p>
                 <input type="text" style={{fontSize: '14px', textAlign: 'center', width: '300px', height: '24px'}} value={this.state.year} onChange={e => this.updateDetail(e.target.value, 'year')} />
                 <div style={{width: '220px', margin: '0 auto'}}>
-                    <div className="button" style={buttonstyle} onClick={buttonclick}>
+                    <div id="addscorebutton" className="button" style={buttonstyle} onClick={buttonclick}>
                         <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>DONE</span>
                     </div>
                     <div className="button" style={{cursor: 'pointer', margin: '20px auto 20px auto', width: '100px', height: '30px', background: '#f44336', borderRadius: '2px', float: 'right'}} onClick={() => this.props.cancelAdd()}>
