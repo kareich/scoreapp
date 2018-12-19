@@ -23,7 +23,6 @@ class CardDetails extends Component {
 
     clickButton(event) {
         if (event.keyCode === 13) {
-            console.log('yo yo yo');
             $('#editscorebutton').trigger('click');
         }
     }
@@ -40,7 +39,7 @@ class CardDetails extends Component {
     }
 
     render() {
-        const types = ['Exercise', 'Fanfare', 'Hornpipe', 'Instructional', 'Jig', 'March', 'Reel', 'Slow Air', 'Strathspey', 'Waltz'];
+        const types = ['Collection', 'Exercise', 'Fanfare', 'Hornpipe', 'Instructional', 'Jig', 'March', 'Reel', 'Slow Air', 'Strathspey', 'Waltz'];
         let buttonstyle = {cursor: 'pointer', margin: '20px auto 20px auto', width: '100px', height: '30px', background: '#0494e1', borderRadius: '2px'};
         let buttonclick = () => this.submitChange();
         if (this.state.title === '' || this.state.author === '' || this.state.year === '' || isNaN(this.state.year) || this.state.year < 1800) {

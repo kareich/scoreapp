@@ -6,7 +6,7 @@ import CardDetails from './carddetails';
 import LoadingCard from './loadingcard';
 import _ from 'lodash';
 const $ = window.$;
-
+const password = 'abs';
 
 class Main extends Component {
     constructor(props) {
@@ -21,20 +21,28 @@ class Main extends Component {
             searchresults: [],
             edit: null,
             file: null,
-            loading: 0
+            loading: 0,
+            initialload: false,
+            searching: true,
+            pw: false
         }
     }
 
-    componentWillMount() {
+    componentWillMount() {        
         const formdata = new FormData();
-        formdata.append('checktype', 'pullscores');
+        formdata.append('checktype', 'pullten');
         axios({
             method: 'post',
             url: 'http://18.237.174.123/internalapi.php',
             data: formdata
         }).then(response => {
-            this.setState({scores: response.data});
+            this.setState({scores: response.data, initialload: true, searching: false});
         });
+    }
+
+    componentDidMount() {
+        $('#passwordinput').focus();
+        window.addEventListener('keyup', this.clickButton);
     }
 
     componentDidUpdate() {
@@ -53,6 +61,19 @@ class Main extends Component {
                 });
             }
         }
+        if (this.state.pw) {
+            window.removeEventListener('keyup', this.clickButton);
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keyup', this.clickButton); 
+    }
+
+    clickButton(event) {
+        if (event.keyCode === 13) {
+            $('#passwordsubmit').trigger('click');
+        }
     }
 
     openPDF(id) {
@@ -60,7 +81,7 @@ class Main extends Component {
     }
 
     updateSearch(e) {        
-        this.setState({search: e.target.value});
+        this.setState({search: e.target.value, scores: [], searching: true});
         const searchterm = e.target.value.toLowerCase();
         this.runSearch(searchterm);        
     }
@@ -70,15 +91,6 @@ class Main extends Component {
     }
 
     updateScore(id, newvalues) {
-        let copy = [...this.state.scores];
-        for (let i = 0; i < copy.length; i++) {
-            if (copy[i].id === id) {
-                copy[i].title = newvalues.title;
-                copy[i].author = newvalues.author;
-                copy[i].type = newvalues.type;
-                copy[i].year = newvalues.year;
-            }
-        }
         const formdata = new FormData();
         formdata.append('id', id);
         formdata.append('title', newvalues.title);
@@ -91,25 +103,35 @@ class Main extends Component {
             url: 'http://18.237.174.123/internalapi.php',
             data: formdata
         });
-        this.setState({scores: copy});
+        this.setState({scores: [], searching: true});
+        this.runSearch(this.state.search.toLowerCase());
     }
 
-    runSearch = _.debounce(searchterm => {
-        const searchterms = searchterm.split(' ');
-        let searchresults = this.state.scores.filter(value => {
-            let match = 0;
-            const title = value.title.toLowerCase();
-            const author = value.author.toLowerCase();
-            const type = value.type.toLowerCase();
-            for (let i = 0; i < searchterms.length; i++) {
-                if (title.indexOf(searchterms[i]) > -1 || author.indexOf(searchterms[i]) > -1 || type.indexOf(searchterms[i]) > -1) {
-                    match++;
-                }
-            }
-            return (match === searchterms.length);
-        });
-        this.setState({searchresults});
-    }, 300);
+    runSearch = _.debounce(searchterm => {        
+        if (searchterm === '') {
+            const formdata = new FormData();
+            formdata.append('checktype', 'pullten');
+            axios({
+                method: 'post',
+                url: 'http://18.237.174.123/internalapi.php',
+                data: formdata
+            }).then(response => {
+                this.setState({scores: response.data, searching: false});
+            });
+        }else {
+            const searchterms = searchterm.split(' ');
+            const formdata = new FormData();
+            formdata.append('checktype', 'pullsearch');
+            formdata.append('searchterms', JSON.stringify(searchterms));
+            axios({
+                method: 'post',
+                url: 'http://18.237.174.123/internalapi.php',
+                data: formdata
+            }).then(response => {
+                this.setState({scores: response.data, searching: false});
+            });
+        }        
+    }, 250);
 
     addScore() {
         const that = this;
@@ -149,63 +171,47 @@ class Main extends Component {
             url: 'http://18.237.174.123/internalapi.php',
             data: formdata
         }).then(response => {
-            let copy = [...this.state.scores];
-            const newscore = {
-                title: newvalues.title,
-                author: newvalues.author,
-                type: newvalues.type,
-                year: newvalues.year,
-                raw: null,
-                id: +response.data
-            };
-            copy.push(newscore);
-            this.setState({scores: copy, loading: 0});
-        });
-        
+            this.setState({scores: [], searching: true, loading: 0});
+            this.runSearch(this.state.search.toLowerCase());
+        });        
     }
 
     render() {
-        let lastten = [];
-        for (let i = this.state.scores.length-10; i < this.state.scores.length; i++) {
-            lastten.push(this.state.scores[i]);
-        }
-        lastten.reverse();
         return (
             <div>
-                {this.state.scores.length === 0 &&
+                {!this.state.pw &&
+                    <div style={{textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
+                        <p style={{margin: '0 auto 4px auto', fontSize: '14px', color: '#666'}}>Enter Password</p>
+                        <input id="passwordinput" type="password" style={{height: '30px', width: '200px', fontSize: '16px', textAlign: 'center'}} />
+                        <div id="passwordsubmit" className="button" style={{textAlign: 'center', cursor: 'pointer', margin: '20px auto 20px auto', width: '120px', height: '30px', background: '#0494e1', borderRadius: '2px'}} onClick={() => {if ($('#passwordinput').val() === password) {this.setState({pw: true});} } }>
+                            <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>SUBMIT</span>
+                        </div>
+                    </div>
+                }
+                {(!this.state.initialload && this.state.pw) &&
                     <div>Loading...</div>
                 }
-                {this.state.scores.length > 0 &&                    
+                {(this.state.initialload && this.state.pw) &&
                     <div style={{width: '90%', margin: '0 5% 0 5%'}}>
                         <div style={{textAlign: 'center'}}>
-                        <input type="text" style={{background: 'url(http://18.237.174.123/searchicon.png) 7px 7px no-repeat', backgroundSize: '18px', margin: '20px auto', height: '30px', width: '30%', fontSize: '16px', paddingLeft: '30px'}} value={this.state.search} onChange={(e) => this.updateSearch(e)}/>
+                            <input type="text" style={{background: 'url(http://18.237.174.123/searchicon.png) 7px 7px no-repeat', backgroundSize: '18px', margin: '20px auto', height: '30px', width: '30%', fontSize: '16px', paddingLeft: '30px'}} value={this.state.search} onChange={(e) => this.updateSearch(e)}/>
                         </div>
-                        {this.state.search === '' &&
-                            <div style={{position: 'relative'}}>
-                                <h1 style={{textAlign: 'center', margin: '0', color: '#666'}}>Most Recent Additions</h1>
+                        <div style={{position: 'relative'}}>
+                            <h1 style={{textAlign: 'center', margin: '0', color: '#666'}}>{(this.state.searching) ? 'Searching...' : (this.state.search === '') ? 'Recent Additions' : 'Search Results'}</h1>
+                            {!this.state.searching &&
                                 <div>
-                                <div className="button" style={{textAlign: 'center', cursor: 'pointer', margin: '20px auto 20px auto', width: '120px', height: '30px', background: '#0494e1', borderRadius: '2px', position: 'absolute', left: '4px', top: '-14px'}} onClick={() => this.addScore()}>
-                                    <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>ADD SCORE</span>
-                                </div>
-                                    {lastten.map(value => {
+                                    <div className="button" style={{textAlign: 'center', cursor: 'pointer', margin: '20px auto 20px auto', width: '120px', height: '30px', background: '#0494e1', borderRadius: '2px', position: 'absolute', left: '4px', top: '-14px'}} onClick={() => this.addScore()}>
+                                        <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>ADD SCORE</span>
+                                    </div>
+                                    {this.state.scores.map(value => {
                                         return <Scorecard value={value} theid={value.id} key={value.id} setEdit={this.setEdit}/>
                                     })}
+                                    {this.state.scores.length === 0 &&
+                                        <p style={{textAlign: 'center', marginTop: '50px'}}>No Scores Match Your Search Critera</p>
+                                    }
                                 </div>
-                            </div>                            
-                        }
-                        {this.state.search !== '' &&
-                            <div style={{position: 'relative'}}>
-                                <h1 style={{textAlign: 'center', margin: '0', color: '#666'}}>Search Results</h1>
-                                <div className="button" style={{textAlign: 'center', cursor: 'pointer', margin: '20px auto 20px auto', width: '120px', height: '30px', background: '#0494e1', borderRadius: '2px', position: 'absolute', left: '4px', top: '-14px'}} onClick={() => this.addScore()}>
-                                    <span style={{lineHeight: '30px', height: '100%', width: '100%', color: 'white', fontSize: '14px'}}>ADD SCORE</span>
-                                </div>
-                                <div>
-                                    {this.state.searchresults.map(value => {
-                                        return <Scorecard value={value} theid={value.id} key={value.id} setEdit={this.setEdit}/>
-                                    })}
-                                </div>
-                            </div>
-                        }
+                            }                            
+                        </div>   
                         {this.state.edit !== null &&
                             <CardDetails setEdit={this.setEdit} value={this.state.edit} updateScore={this.updateScore}/>
                         }   
@@ -215,7 +221,7 @@ class Main extends Component {
                         {this.state.loading === 1 &&
                             <LoadingCard />
                         }
-                    </div>
+                    </div>                    
                 }
             </div>
         );

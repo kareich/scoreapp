@@ -63,7 +63,7 @@ class AddCard extends Component {
     }
 
     render() {
-        const types = ['Exercise', 'Fanfare', 'Hornpipe', 'Instructional', 'Jig', 'March', 'Reel', 'Slow Air', 'Strathspey', 'Waltz'];
+        const types = ['Collection', 'Exercise', 'Fanfare', 'Hornpipe', 'Instructional', 'Jig', 'March', 'Reel', 'Slow Air', 'Strathspey', 'Waltz'];
         let buttonstyle = {cursor: 'pointer', margin: '20px auto 20px auto', width: '100px', height: '30px', background: '#0494e1', borderRadius: '2px', float: 'left'};
         let buttonclick = () => this.props.uploadScore(this.props.file, this.state);
         if (this.state.title === '' || this.state.author === '' || this.state.year === '' || isNaN(this.state.year) || this.state.year < 1800) {

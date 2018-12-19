@@ -4,6 +4,27 @@
     global $dbh;
     $checktype = $_POST['checktype'];
 
+    if ($checktype == 'pullten') {
+        $stmt = $dbh->prepare('SELECT * FROM scores ORDER BY id DESC LIMIT 10');
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+        echo json_encode($result);
+    }
+    if ($checktype == 'pullsearch') {
+        $searchterms = json_decode($_POST['searchterms']);
+        $selectstring = 'SELECT * FROM scores WHERE ';
+        for ($i = 0; $i < count($searchterms); $i++) {
+            $selectstring .= '(title LIKE "%'.$searchterms[$i].'%" OR author LIKE "%'.$searchterms[$i].'%" OR type LIKE "%'.$searchterms[$i].'%" OR year LIKE "%'.$searchterms[$i].'%")';
+            if ($i !== (count($searchterms)-1)) {
+                $selectstring .= ' AND ';
+            }
+        }
+        $selectstring .= ' ORDER BY title asc';
+        $stmt = $dbh->prepare($selectstring);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+        echo json_encode($result);
+    }
     if ($checktype == 'pullscores') {
         $stmt = $dbh->prepare('SELECT * FROM scores');
         $stmt->execute();
